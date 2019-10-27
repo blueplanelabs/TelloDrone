@@ -20,8 +20,9 @@ TDUDPServer >> initialize [
 	"Initialize the UDP server"
 
 	super initialize.
-	serverSocket := Socket newUDP
-		setPort: self serverPort.
+	serverSocket := Socket newUDP setPort: self serverPort.
+	self data.
+	
 ]
 
 { #category : #initialization }
@@ -30,26 +31,23 @@ TDUDPServer >> serverPort [
 ]
 
 { #category : #operations }
-TDUDPServer >> start [
-
-	| result buffer input |
+TDUDPServer >> start: aBlock [
+	| result buffer input state |
 	buffer := String new: 256.
 	input := 0.
-	[ [ [ true ]
+	[ [ true ]
 		whileTrue: [ [ result := serverSocket receiveUDPDataInto: buffer.
 			result first > 0 ] whileFalse: [  ].
 			input := buffer copyFrom: 1 to: result first.
-			Transcript
-				show: input;
-				cr.
-			Transcript flush ] ]
-		ensure: [ serverSocket closeAndDestroy ] ]
+			state := Dictionary
+				newFromPairs: (input findBetweenSubstrings: #(':' ';')).
+				aBlock value:  state] ]
 		forkAt: Processor userBackgroundPriority
 		named: 'UDP server'
 ]
 
 { #category : #accessing }
-TDUDPServer >> stop [ 
-
-Processor suspendFirstAt: Processor userBackgroundPriority.
+TDUDPServer >> stop [
+	serverSocket closeAndDestroy .
+	Processor suspendFirstAt: Processor userBackgroundPriority
 ]

@@ -5,9 +5,7 @@ Class {
 		'clientUDP',
 		'stateMonitor',
 		'droneAddress',
-		'dronePort',
-		'serverPort',
-		'serverSocket'
+		'dronePort'
 	],
 	#category : #'Tello-Drone'
 }
@@ -43,16 +41,10 @@ TDDrone >> sendCommand: aCommand [
 ]
 
 { #category : #accessing }
-TDDrone >> serverPort [
-	serverPort ifNil: [ serverPort := 8890 ].
-	^ serverPort
-]
-
-{ #category : #accessing }
 TDDrone >> stateMonitor [
 	"return a TDStateMonitor instance"
 
-^TDStateMonitor new.
+^ stateMonitor ifNil: [TDStateMonitor new].
 ]
 
 { #category : #initialization }
