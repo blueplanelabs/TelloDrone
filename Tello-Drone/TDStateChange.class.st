@@ -15,6 +15,16 @@ TDStateChange class >> state: aStateInfo [
 ]
 
 { #category : #accessing }
+TDStateChange >> printString [
+	^ String streamContents: [ :str | self state printElementsOn: str ]
+]
+
+{ #category : #accessing }
+TDStateChange >> state [
+	^state
+]
+
+{ #category : #accessing }
 TDStateChange >> state: aStateInfo [
 
 	state := aStateInfo .

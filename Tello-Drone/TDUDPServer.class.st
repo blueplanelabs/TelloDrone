@@ -3,16 +3,20 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'serverSocket',
-		'serverPort'
+		'serverPort',
+		'serverProcess'
 	],
 	#category : #'Tello-Drone'
 }
 
 { #category : #construction }
 TDUDPServer class >> atPort: aPort [
-	^ Socket newUDP
-		setPort: aPort;
-		yourself
+|aTDUDPServer|
+aTDUDPServer := self new.
+aTDUDPServer serverPort: aPort.
+^aTDUDPServer
+
+
 ]
 
 { #category : #initialization }
@@ -20,9 +24,7 @@ TDUDPServer >> initialize [
 	"Initialize the UDP server"
 
 	super initialize.
-	serverSocket := Socket newUDP setPort: self serverPort.
-	self data.
-	
+	self serverPort
 ]
 
 { #category : #initialization }
@@ -30,18 +32,31 @@ TDUDPServer >> serverPort [
 	 ^serverPort ifNil: [ serverPort := 8890 ]
 ]
 
+{ #category : #initialization }
+TDUDPServer >> serverPort: aPort [
+	serverPort := aPort
+]
+
+{ #category : #initialization }
+TDUDPServer >> serverSocket [
+	serverSocket
+		ifNotNil: [ serverSocket isUnconnectedOrInvalid 
+				ifFalse: [ ^ serverSocket ] ].
+	^ serverSocket := Socket newUDP setPort: self serverPort
+]
+
 { #category : #operations }
 TDUDPServer >> start: aBlock [
 	| result buffer input state |
 	buffer := String new: 256.
 	input := 0.
-	[ [ true ]
-		whileTrue: [ [ result := serverSocket receiveUDPDataInto: buffer.
+	serverProcess := [ [ true ]
+		whileTrue: [ [ result := (self serverSocket) receiveUDPDataInto: buffer.
 			result first > 0 ] whileFalse: [  ].
 			input := buffer copyFrom: 1 to: result first.
 			state := Dictionary
 				newFromPairs: (input findBetweenSubstrings: #(':' ';')).
-				aBlock value:  state] ]
+			aBlock value: state ] ]
 		forkAt: Processor userBackgroundPriority
 		named: 'UDP server'
 ]
@@ -49,5 +64,6 @@ TDUDPServer >> start: aBlock [
 { #category : #accessing }
 TDUDPServer >> stop [
 	serverSocket closeAndDestroy .
-	Processor suspendFirstAt: Processor userBackgroundPriority
+	serverProcess terminate
+	"	Processor scanSchedule: [ :proc | (proc name = 'UDP Server') ifTrue: [proc terminate ]] startingAt:  Processor userBackgroundPriority"
 ]

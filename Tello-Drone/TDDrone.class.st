@@ -5,7 +5,8 @@ Class {
 		'clientUDP',
 		'stateMonitor',
 		'droneAddress',
-		'dronePort'
+		'dronePort',
+		'clientProcess'
 	],
 	#category : #'Tello-Drone'
 }
@@ -26,6 +27,21 @@ TDDrone >> clientUDP [
 	^ clientUDP
 ]
 
+{ #category : #accessing }
+TDDrone >> connect [
+	clientProcess := [ [ true ]
+		whileTrue: [ self clientUDP
+				sendData: 'command'
+				toHost: droneAddress
+				port: dronePort.
+			12 seconds asDelay wait ] ] forkAt: 70 named: 'UDP client'
+]
+
+{ #category : #accessing }
+TDDrone >> disconnect [
+	clientProcess terminate
+]
+
 { #category : #initialization }
 TDDrone >> initialize [
 	"initialize instanceVariables"
@@ -44,7 +60,7 @@ TDDrone >> sendCommand: aCommand [
 TDDrone >> stateMonitor [
 	"return a TDStateMonitor instance"
 
-^ stateMonitor ifNil: [TDStateMonitor new].
+	^ stateMonitor ifNil: [ stateMonitor := TDStateMonitor new ]
 ]
 
 { #category : #initialization }
