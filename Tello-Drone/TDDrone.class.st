@@ -42,6 +42,17 @@ TDDrone >> disconnect [
 	clientProcess terminate
 ]
 
+{ #category : #'gt-inspector-extension' }
+TDDrone >> gtInspectorItemsIn: composite [
+	^ composite fastTable
+		title: 'Items';
+		display: [ self stateMonitor currentState associations ];
+			column: 'Key'
+			evaluated: [ :each | GTObjectPrinter asTruncatedTextFrom: each key ];
+		column: 'Value'
+			evaluated: [ :each | GTObjectPrinter asTruncatedTextFrom: each value ]
+]
+
 { #category : #initialization }
 TDDrone >> initialize [
 	"initialize instanceVariables"
