@@ -15,29 +15,28 @@ Class {
 TDDrone class >> toHost: anAddress port: aPort [
 	"Constructor with the IP Address and the UDP Port of the Tello drone"
 
-	
 	^ self new
-	 toHost: anAddress port: aPort;
-	yourself
+		toHost: (SocketAddress fromDottedString:anAddress)  port: aPort asInteger;
+		yourself
 ]
 
-{ #category : #accessing }
+{ #category : #'private - access' }
 TDDrone >> clientUDP [
 	clientUDP ifNil: [ clientUDP := Socket newUDP ].
 	^ clientUDP
 ]
 
-{ #category : #accessing }
+{ #category : #api }
 TDDrone >> connect [
 	clientProcess := [ [ true ]
 		whileTrue: [ self clientUDP
 				sendData: 'command'
 				toHost: droneAddress
 				port: dronePort.
-			12 seconds asDelay wait ] ] forkAt: 70 named: 'UDP client'
+			14 seconds asDelay wait ] ] forkAt: 70 named: 'UDP client'
 ]
 
-{ #category : #accessing }
+{ #category : #api }
 TDDrone >> disconnect [
 	clientProcess terminate
 ]
@@ -62,16 +61,26 @@ TDDrone >> initialize [
 	dronePort := 8889.
 ]
 
-{ #category : #'private protocol' }
+{ #category : #api }
 TDDrone >> sendCommand: aCommand [
 	self clientUDP sendData: aCommand toHost: droneAddress port: dronePort
 ]
 
-{ #category : #accessing }
+{ #category : #api }
+TDDrone >> startMonitoring [ 
+self stateMonitor start
+]
+
+{ #category : #'private - access' }
 TDDrone >> stateMonitor [
 	"return a TDStateMonitor instance"
 
 	^ stateMonitor ifNil: [ stateMonitor := TDStateMonitor new ]
+]
+
+{ #category : #api }
+TDDrone >> stopMonitoring [
+	self stateMonitor stop
 ]
 
 { #category : #initialization }

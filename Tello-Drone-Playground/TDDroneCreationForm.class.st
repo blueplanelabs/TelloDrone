@@ -9,7 +9,6 @@ Class {
 		'buttonCreate',
 		'buttonConnect',
 		'buttonDisconnect',
-		'textScreen',
 		'telloDrone'
 	],
 	#category : #'Tello-Drone-Playground'
@@ -22,8 +21,7 @@ TDDroneCreationForm class >> defaultSpec [
 			row
 				add: #labelHost;
 				add: #fieldHost ]
-			origin: 0 @ 0
-			corner: 1 @ 0.25;
+			height: self toolbarHeight;
 		newRow: [ :row | 
 			row
 				add: #labelPort;
@@ -37,7 +35,7 @@ TDDroneCreationForm class >> defaultSpec [
 			row
 				add: #buttonConnect;
 				add: #buttonDisconnect ]
-			origin: 0 @ 75
+			origin: 0 @ 0.75
 			corner: 1 @ 1;
 		yourself
 ]
@@ -76,16 +74,22 @@ TDDroneCreationForm >> fieldPort [
 TDDroneCreationForm >> initializePresenter [
 	buttonCreate
 		action: [ telloDrone := TDDrone toHost: fieldHost text port: fieldPort text.
+			buttonConnect enable ].
+	buttonConnect
+		action: [ telloDrone connect.buttonDisconnect enable.
+			buttonCreate disable.
+			buttonConnect disable.
+			 ].
+	buttonDisconnect
+		action: [ telloDrone disconnect .buttonCreate enable.
 			buttonConnect enable.
-			buttonDisconnect enable .
-			self show]
+			buttonDisconnect disable ]
 ]
 
 { #category : #initialization }
 TDDroneCreationForm >> initializeWidgets [
 	"widget instantiation"
 
-	textScreen := self newLabel.
 	labelHost := self newLabel.
 	fieldHost := self newTextInput autoAccept: true.
 	labelPort := self newLabel.
@@ -95,14 +99,17 @@ TDDroneCreationForm >> initializeWidgets [
 	buttonDisconnect := self newButton.
 
 	"widget configuration"
-	textScreen label: 'Insert Host and Port of the Tello Drone'.
 	labelHost label: 'Insert Tello Drone Host:'.
 	fieldHost ghostText: '192.168.10.1'.
 	labelPort label: 'Insert Tello Drone Port:'.
 	fieldPort ghostText: '8889'.
 	buttonCreate label: 'Create'.
-	buttonConnect label: 'Connect'; disable.
-	buttonDisconnect label: 'Disconnect'; disable.
+	buttonConnect
+		label: 'Connect';
+		disable.
+	buttonDisconnect
+		label: 'Disconnect';
+		disable.
 
 	"specification of order of focus"
 	self focusOrder
@@ -121,11 +128,31 @@ TDDroneCreationForm >> labelPort [
 ]
 
 { #category : #accessing }
-TDDroneCreationForm >> textScreen [
-	^ textScreen
+TDDroneCreationForm >> telloDrone [
+	^ telloDrone
+]
+
+{ #category : #accessing }
+TDDroneCreationForm >> telloDrone: anObject [
+	telloDrone := anObject
 ]
 
 { #category : #api }
 TDDroneCreationForm >> title [ 
 ^'Tello Drone Creation'
+]
+
+{ #category : #'api-events' }
+TDDroneCreationForm >> whenConnectDo: aBlock [
+	buttonConnect  whenActionPerformedDo: aBlock
+]
+
+{ #category : #'api-events' }
+TDDroneCreationForm >> whenCreateDo: aBlock [
+buttonCreate whenActionPerformedDo: aBlock
+]
+
+{ #category : #'api-events' }
+TDDroneCreationForm >> whenDisconnectDo: aBlock [
+	buttonDisconnect whenActionPerformedDo: aBlock
 ]
