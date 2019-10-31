@@ -13,11 +13,14 @@ Class {
 { #category : #specs }
 TDDronePlayground class >> defaultSpec [
 	^ SpecColumnLayout composed
-		add: #creation;
-		add: #commands;
+		add: #creation height: self toolbarHeight * 4.4;
+		add: #commands
+			top: self toolbarHeight * 4.4
+			bottom: self toolbarHeight * 5.6;
 		add: #monitor;
 		add: #screen;
-		yourself
+		"height: self toolbarHeight * 1.2"
+			yourself
 ]
 
 { #category : #accessing }
@@ -51,9 +54,9 @@ TDDronePlayground >> initializePresenter [
 			commands enable.
 			monitor enable ].
 	creation
-		whenDisconnectDo: [ screen label: 'Disconnected'.
-			"Hacer que compruebe si está monitorizando y pararlo?
-			telloDrone stopMonitoring?"
+		whenDisconnectDo: [ 
+			creation telloDrone isMonitoring ifTrue:[monitor buttonStopMonitor action].
+			screen label: 'Disconnected'.
 			commands disable.
 			monitor disable ]
 ]
@@ -96,4 +99,9 @@ TDDronePlayground >> screen [
 { #category : #accessing }
 TDDronePlayground >> screen: anObject [
 	screen := anObject
+]
+
+{ #category : #api }
+TDDronePlayground >> title [ 
+^'Tello Drone Playground'
 ]

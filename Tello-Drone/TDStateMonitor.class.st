@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'stateAnnouncer',
 		'server',
-		'currentState'
+		'currentStateMonitored',
+		'active'
 	],
 	#category : #'Tello-Drone'
 }
@@ -13,15 +14,21 @@ Class {
 TDStateMonitor >> initialize [
 	super initialize.
 	self server.
-	self stateAnnouncer
+	self stateAnnouncer.
+	active:=false
 ]
 
-{ #category : #initialization }
+{ #category : #api }
+TDStateMonitor >> isActive [
+	^active
+]
+
+{ #category : #'private actions' }
 TDStateMonitor >> manageEvents: aStateInfo [
-	aStateInfo = currentState
+	aStateInfo = currentStateMonitored
 		ifTrue: [ ^ self ].
 	self stateAnnouncer announce: (TDStateChange state: aStateInfo).
-	currentState := aStateInfo.
+	currentStateMonitored := aStateInfo.
 "	Transcript
 		show: currentState;
 		cr.
@@ -33,10 +40,10 @@ TDStateMonitor >> server [
 	^ server ifNil: [ server := TDUDPServer new ]
 ]
 
-{ #category : #initialization }
+{ #category : #api }
 TDStateMonitor >> start [
+active:=true.
 	self server start: [ :info | self manageEvents: info ]
-	
 ]
 
 { #category : #accessing }
@@ -44,23 +51,24 @@ TDStateMonitor >> stateAnnouncer [
 	^ stateAnnouncer ifNil: [ stateAnnouncer := Announcer new ]
 ]
 
-{ #category : #initialization }
+{ #category : #api }
 TDStateMonitor >> stop [
+active:=false.
 	self server stop
 ]
 
-{ #category : #initialization }
+{ #category : #api }
 TDStateMonitor >> subscribe: anAnnunciableClass do: aValuable [
 self stateAnnouncer subscribe: anAnnunciableClass  do: aValuable 
 	
 ]
 
-{ #category : #initialization }
+{ #category : #api }
 TDStateMonitor >> subscribe: anAnnunciableClass send: aSelector to: anObject [
 	self stateAnnouncer subscribe: anAnnunciableClass send: aSelector to: anObject
 ]
 
-{ #category : #initialization }
+{ #category : #api }
 TDStateMonitor >> unsubscribe: anObject [
 	self stateAnnouncer
 		unsubscribe: anObject

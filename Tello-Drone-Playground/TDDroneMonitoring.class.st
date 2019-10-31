@@ -4,15 +4,23 @@ Class {
 	#instVars : [
 		'buttonStartMonitor',
 		'buttonStopMonitor',
+		'status',
 		'drone',
-		'allWidgets'
+		'allWidgets',
+		'statusTable'
 	],
 	#category : #'Tello-Drone-Playground'
 }
 
 { #category : #specs }
 TDDroneMonitoring class >> defaultSpec [
-	^ SpecRowLayout composed add: #buttonStartMonitor;add: #buttonStopMonitor;yourself 
+	^ SpecRowLayout composed
+		newColumn: [ :column | 
+			column
+				add: #buttonStartMonitor;
+				add: #buttonStopMonitor;
+				yourself ];
+		newColumn: [ :column | column add: #status ];yourself 
 ]
 
 { #category : #accessing }
@@ -56,11 +64,15 @@ TDDroneMonitoring >> enable [
 TDDroneMonitoring >> initializePresenter [
 	buttonStartMonitor
 		action: [ drone startMonitoring.
+			drone subscribe: TDStateChange send: #showTableFrom: to: status.
 			buttonStopMonitor enable.
-			buttonStartMonitor disable ].
-		buttonStopMonitor action: [ drone stopMonitoring .
+			buttonStartMonitor disable.
+			status enable ].
+	buttonStopMonitor
+		action: [ drone stopMonitoring.
 			buttonStartMonitor enable.
-			buttonStopMonitor disable ]
+			buttonStopMonitor disable.
+			status disable ]
 ]
 
 { #category : #initialization }
@@ -70,6 +82,7 @@ TDDroneMonitoring >> initializeWidgets [
 	allWidgets := OrderedCollection new.
 	buttonStartMonitor := self newButton.
 	buttonStopMonitor := self newButton.
+	status := self instantiate: TDLabelledContainer.
 
 	"widgets configuration"
 	buttonStartMonitor
@@ -79,10 +92,50 @@ TDDroneMonitoring >> initializeWidgets [
 	buttonStopMonitor
 		label: 'Stop Monitor';
 		disable.
-		allWidgets add: buttonStopMonitor.
-
-	"specification of order of focus"
+	allWidgets add: buttonStopMonitor.
+	status
+		label: 'Tello Drone Status';
+		subwidget: (statusTable := self newDataTable);
+		disable.
+	allWidgets add: status.
 	self focusOrder
 		add: buttonStartMonitor;
 		add: buttonStopMonitor
+
+
+	"specification of order of focus"
+]
+
+{ #category : #accessing }
+TDDroneMonitoring >> newDataTable [
+	| aTable |
+	aTable := FTTableMorph new
+		hResizing: #spaceFill;
+		vResizing: #spaceFill;
+		asSpecAdapter.
+	"	tableDataSource := TDFormTableDataSource for: self model."
+	aTable widget beResizable.
+	aTable widget
+		addColumn:
+			(FTColumn new
+				id: 'Name';
+				width: 110;
+				yourself);
+		addColumn:
+			(FTColumn new
+				id: 'Value';
+				yourself).
+	"	tableDataSource addColumnsTo: aTable widget.
+	aTable widget dataSource: tableDataSource."
+	^ aTable
+]
+
+{ #category : #accessing }
+TDDroneMonitoring >> status [
+	^ status
+]
+
+{ #category : #accessing }
+TDDroneMonitoring >> status: anObject [
+	status := anObject
 ]

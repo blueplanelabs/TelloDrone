@@ -16,7 +16,7 @@ Class {
 
 { #category : #specs }
 TDDroneCreationForm class >> defaultSpec [
-	^ SpecLayout composed
+	^ SpecColumnLayout composed
 		newRow: [ :row | 
 			row
 				add: #labelHost;
@@ -26,17 +26,14 @@ TDDroneCreationForm class >> defaultSpec [
 			row
 				add: #labelPort;
 				add: #fieldPort ]
-			origin: 0 @ 0.25
-			corner: 1 @ 0.5;
+			height: self toolbarHeight;
 		newRow: [ :row | row add: #buttonCreate ]
-			origin: 0 @ 0.5
-			corner: 1 @ 0.75;
+			height: self toolbarHeight;
 		newRow: [ :row | 
 			row
 				add: #buttonConnect;
 				add: #buttonDisconnect ]
-			origin: 0 @ 0.75
-			corner: 1 @ 1;
+			height: self toolbarHeight;
 		yourself
 ]
 
@@ -56,8 +53,8 @@ TDDroneCreationForm >> buttonDisconnect [
 ]
 
 { #category : #api }
-TDDroneCreationForm >> extent [ 
-^400@400
+TDDroneCreationForm >> extent [
+	^ 400 @ (self class toolbarHeight * 5.4)
 ]
 
 { #category : #accessing }
@@ -114,7 +111,10 @@ TDDroneCreationForm >> initializeWidgets [
 	"specification of order of focus"
 	self focusOrder
 		add: fieldHost;
-		add: fieldPort
+		add: fieldPort;
+add:		buttonCreate  ;
+		add: buttonConnect ;
+		add:buttonDisconnect 
 ]
 
 { #category : #accessing }
@@ -138,8 +138,8 @@ TDDroneCreationForm >> telloDrone: anObject [
 ]
 
 { #category : #api }
-TDDroneCreationForm >> title [ 
-^'Tello Drone Creation'
+TDDroneCreationForm >> title [
+	^ 'Tello Drone Creation Form'
 ]
 
 { #category : #'api-events' }

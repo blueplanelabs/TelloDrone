@@ -13,10 +13,14 @@ Class {
 
 { #category : #specs }
 TDDroneCommandsGroup class >> defaultSpec [
-	^ SpecRowLayout composed
-		add: #takeoff;
-		add: #land;
-		add: #flip;yourself 
+	^ SpecColumnLayout composed
+		newRow: [ :row | 
+			row
+				add: #takeoff;
+				add: #land;
+				add: #flip ]
+			height: self toolbarHeight;
+		yourself
 ]
 
 { #category : #api }

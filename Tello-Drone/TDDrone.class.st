@@ -28,12 +28,10 @@ TDDrone >> clientUDP [
 
 { #category : #api }
 TDDrone >> connect [
+self sendCommand: 'command'.
 	clientProcess := [ [ true ]
-		whileTrue: [ self clientUDP
-				sendData: 'command'
-				toHost: droneAddress
-				port: dronePort.
-			14 seconds asDelay wait ] ] forkAt: 70 named: 'UDP client'
+		whileTrue: [ self sendCommand: 'battery'.
+			14 seconds asDelay wait ] ] forkAt: 20 named: 'UDP client'
 ]
 
 { #category : #api }
@@ -62,8 +60,18 @@ TDDrone >> initialize [
 ]
 
 { #category : #api }
+TDDrone >> isMonitoring [
+	^ self stateMonitor isActive
+]
+
+{ #category : #api }
 TDDrone >> sendCommand: aCommand [
-	self clientUDP sendData: aCommand toHost: droneAddress port: dronePort
+	"Trazas"
+	Transcript crShow: aCommand.
+	^ self clientUDP
+		sendData: aCommand
+		toHost: droneAddress
+		port: dronePort
 ]
 
 { #category : #api }
@@ -83,6 +91,14 @@ TDDrone >> stopMonitoring [
 	self stateMonitor stop
 ]
 
+{ #category : #api }
+TDDrone >> subscribe: anAnnunciableClass send: aSelector to: anObject [
+	self stateMonitor
+		subscribe: anAnnunciableClass
+		send: aSelector
+		to: anObject
+]
+
 { #category : #initialization }
 TDDrone >> toHost: anAddress port: aPort [
 
@@ -90,4 +106,9 @@ TDDrone >> toHost: anAddress port: aPort [
 	
 	droneAddress := anAddress.
 	dronePort := aPort .
+]
+
+{ #category : #subscription }
+TDDrone >> unsubscribe: anObject [
+	self stateMonitor unsubscribe: anObject
 ]
